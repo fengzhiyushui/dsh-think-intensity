@@ -2,11 +2,11 @@
 
 DSH 思考强度策略插件：**不让模型"拥有"档位，而是在已有档位之上决定每次请求用哪一档**，并把每次干预变得可观测、可回滚。
 
-声明层（`reasoningEfforts`）已由 DSH 0.2.x 官方设置页覆盖，本插件只做策略：显式选择永远优先，没选档的请求按配置的默认策略注入，注入前过能力守卫，异常一律放行原请求——**没有本插件时宿主行为不变**。
+声明层（`reasoningEfforts`）已由 DSH 0.2.x 官方设置页覆盖，本插件只做策略：显式选择永远优先，没选档的请求按配置的默认策略注入，注入前过能力守卫，异常一律放行原请求；不配置时不注入任何档位（唯一例外是剥离无能力模型的继承档位，防报错）。
 
 ## 状态
 
-M0–M4 已实现，122 个单测覆盖：策略核心（显式 > 子 agent > 全局默认）、能力守卫、purpose 分档、自愈降级、观测与统计落盘、配置回填（默认 dry-run）。M5 设置页与 M6 多版本矩阵/发布未开始。
+M0–M4 已实现，123 个单测覆盖：策略核心（显式 > 子 agent > 全局默认）、能力守卫、purpose 分档、自愈降级、观测与统计落盘、配置回填（默认 dry-run）。M5 设置页未开始；M6 的发布工程已就绪，多版本实测与 npm 首发待做。
 
 **零配置时插件不注入任何档位**，只做两件事：剥离"模型无推理能力却带着继承档位"的请求参数（防止 `UNSUPPORTED_REASONING_EFFORT`），以及记录调用统计与结构化决策日志。要按策略改档位，见下节。
 
@@ -36,7 +36,7 @@ M0–M4 已实现，122 个单测覆盖：策略核心（显式 > 子 agent > �
 
 自检：`dsh --profile web --dump-config | grep -A4 think-intensity` 确认配置已落到条目；运行后 `grep 'decision {"kind":"inject"'` 看注入记录，统计在 `$DSH_HOME/storages/think-intensity-stats.json`。
 
-## 安装（冒烟）
+## 安装
 
 ```bash
 dsh plugin --profile web add dsh-think-intensity                        # npm 预构建包（发布后）
@@ -55,16 +55,10 @@ dsh --profile web --dump-config                                         # 验证
 ```bash
 pnpm install        # node-linker=hoisted（见 pnpm-workspace.yaml）
 pnpm run build      # tsc 出类型 -> tsdown 从 lib/types 打出单文件 lib/index.js
-pnpm run test       # vitest 单测（122 用例）
+pnpm run test       # vitest 单测（123 用例）
 ```
 
-用本地源码宿主挂载调试（可选，报告 §4.1）：
-
-```bash
-cd _research/deepseek-harness
-pnpm install && pnpm run build
-pnpm dsh web --patch ../scratch/cordis.yml
-```
+需要断点时用 `_research/deepseek-harness` 的源码宿主：`pnpm install && pnpm run build`，再用 `--patch` 挂载自定义 overlay；日常冒烟用上面的 CLI 即可。
 
 或直接用已发布的 CLI 冒烟：
 
@@ -88,7 +82,7 @@ npx --ignore-scripts @deepseek-ai/dsh plugin --profile web add .
 
 ## 分发
 
-- **npm（主）**：`files` 白名单只含 `lib/index.js`、`lib/types/**/*.d.ts` 与声明文件，`prepack` 强制重建，不发布 TS 源。
+- **npm（主）**：`files` 白名单只含 `lib/index.js`、`lib/types/**/*.d.ts` 与声明文件，`prepare` 在打包前强制重建，不发布 TS 源。
 - **GitHub（辅）**：安装时 `prepare` 会用源码构建，需要 Node 22+；pnpm 10+ 默认拦截依赖构建脚本，需在 `pnpm-workspace.yaml` 里放行（`onlyBuiltDependencies`）。
 - **dist-tag 按宿主大版本分线**（如 `dsh-0.2`），不按 rc 逐个打 tag。
 
