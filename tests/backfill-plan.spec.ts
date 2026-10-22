@@ -4,6 +4,7 @@ import {
   detectMissing,
   planBackfill,
   routeDefaultAllowed,
+  DEFAULT_BACKFILL_LEVELS,
   type PiAiUserDocLike,
 } from '../src/backfill/plan.js'
 
@@ -40,6 +41,12 @@ describe('checkBackfillLegality（M4.4 对齐官方 catalog 校验）', () => {
 
   it('off 带值也合法', () => {
     expect(checkBackfillLegality({ off: 'disabled', high: 'high' })).toEqual({ ok: true })
+  })
+
+  it('DEFAULT_BACKFILL_LEVELS 符合官方 catalog 规范', () => {
+    expect(checkBackfillLegality(DEFAULT_BACKFILL_LEVELS)).toEqual({ ok: true })
+    expect(DEFAULT_BACKFILL_LEVELS.off).toBe(null)
+    expect(DEFAULT_BACKFILL_LEVELS.high).toBe('high')
   })
 })
 
