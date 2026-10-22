@@ -11,6 +11,15 @@ export type ThinkingLevel = (typeof THINKING_LEVELS)[number]
 /** 一个模型声明的档位表：key=档位，value=wire 值；off 可为 null（支持但不发送）。 */
 export type ReasoningEfforts = Partial<Record<ThinkingLevel, string | null>>
 
+/** 默认回填的常用档位表（off=null, low/medium/high/max=同名 wire 值）。 */
+export const DEFAULT_BACKFILL_LEVELS: ReasoningEfforts = {
+  off: null,
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  max: 'max',
+}
+
 /** 回填配置的校验结果。 */
 export type LegalityCheck =
   | { ok: true }

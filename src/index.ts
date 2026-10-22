@@ -2,7 +2,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import Schema from '@deepseek-ai/schemastery'
 import { EffortBlacklist } from './blacklist.js'
 import { BackfillWriter, type SettingsFacadeLike } from './backfill/writer.js'
-import { detectMissing, planBackfill, type ReasoningEfforts } from './backfill/plan.js'
+import { detectMissing, planBackfill, DEFAULT_BACKFILL_LEVELS, type ReasoningEfforts } from './backfill/plan.js'
 import { registerAgentRequestHook, type HookDeps } from './hooks/agent-request.js'
 import { registerLlmStreamHook } from './hooks/llm-stream.js'
 import { registerRequestErrorHook } from './hooks/request-error.js'
@@ -86,12 +86,8 @@ async function runBackfillPass(writer: BackfillWriter, config: ResolvedConfig): 
     const doc = writer.readUserDoc()
     const missing = detectMissing(doc as Parameters<typeof detectMissing>[0])
     if (missing.length === 0) return
-    const levels = config.backfillLevels.get()
-    if (Object.keys(levels).length === 0) {
-      // 未配置档位：纯报告（决策日志可 grep）
-      writer.logMissing(missing)
-      return
-    }
+    const userLevels = config.backfillLevels.get()
+    const levels = Object.keys(userLevels).length > 0 ? (userLevels as ReasoningEfforts) : DEFAULT_BACKFILL_LEVELS
     const legality = writer.guardLegality(levels)
     if (!legality.ok) {
       writer.logMissing(missing, `backfill skipped: ${legality.reason}`)
