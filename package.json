@@ -2,7 +2,16 @@
   "name": "dsh-think-intensity",
   "version": "0.1.0",
   "description": "DSH 思考强度策略插件：在模型已有档位之上决定每次请求用哪一档，可观测、可回滚。",
+  "author": "fengzhiyushui",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fengzhiyushui/dsh-think-intensity.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fengzhiyushui/dsh-think-intensity/issues"
+  },
+  "homepage": "https://github.com/fengzhiyushui/dsh-think-intensity#readme",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",

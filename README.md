@@ -40,7 +40,7 @@ M0–M4 已实现，123 个单测覆盖：策略核心（显式 > 子 agent > �
 
 ```bash
 dsh plugin --profile web add dsh-think-intensity                        # npm 预构建包（发布后）
-dsh plugin --profile web add github:<owner>/dsh-think-intensity#<sha>   # GitHub 安装：建议固定 commit
+dsh plugin --profile web add github:fengzhiyushui/dsh-think-intensity#<sha>   # GitHub 安装：建议固定 commit
 dsh plugin --profile web add .                                          # 本地目录
 dsh plugin --profile web remove dsh-think-intensity                     # 卸载
 dsh --profile web --dump-config                                         # 验证层已移除
