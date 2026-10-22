@@ -1,0 +1,3 @@
+nodeLinker: hoisted
+autoInstallPeers: false
+packages: []

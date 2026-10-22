@@ -1,0 +1,98 @@
+# dsh-think-intensity
+
+DSH 思考强度策略插件：**不让模型"拥有"档位，而是在已有档位之上决定每次请求用哪一档**，并把每次干预变得可观测、可回滚。
+
+声明层（`reasoningEfforts`）已由 DSH 0.2.x 官方设置页覆盖，本插件只做策略：显式选择永远优先，没选档的请求按配置的默认策略注入，注入前过能力守卫，异常一律放行原请求——**没有本插件时宿主行为不变**。
+
+## 状态
+
+M0–M4 已实现，122 个单测覆盖：策略核心（显式 > 子 agent > 全局默认）、能力守卫、purpose 分档、自愈降级、观测与统计落盘、配置回填（默认 dry-run）。M5 设置页与 M6 多版本矩阵/发布未开始。
+
+**零配置时插件不注入任何档位**，只做两件事：剥离"模型无推理能力却带着继承档位"的请求参数（防止 `UNSUPPORTED_REASONING_EFFORT`），以及记录调用统计与结构化决策日志。要按策略改档位，见下节。
+
+## 启用
+
+在 profile 的 `cordis.patch.yml`（`$DSH_HOME/profiles/<name>/cordis.patch.yml`）里按 entry id 覆盖配置：
+
+```yaml
+- id: think-intensity
+  config:
+    defaultLevel: high        # 没选档的请求统一 high；留空 = 不干预
+    subagentLevel: max        # 子 agent 会话单独一档；留空 = 回落 defaultLevel
+    providers: []             # 只对列出的 provider 生效；空 = 全部
+    purposeLevels:            # 辅助调用分档
+      compaction: low
+      session-title: off
+```
+
+其余配置项：
+
+| 键 | 默认 | 说明 |
+|---|---|---|
+| `statsFlushMs` | `30000` | 统计落盘最小间隔（毫秒） |
+| `backfillEnabled` | `false` | `true` 才真正写入缺失的 `reasoningEfforts` |
+| `backfillLevels` | `{}` | 回填用的档位→wire 值表；`off` 可为 `null` |
+| `routeDefaultLevel` | 空 | 仅当路由内所有模型都支持该档时才写入 |
+
+自检：`dsh --profile web --dump-config | grep -A4 think-intensity` 确认配置已落到条目；运行后 `grep 'decision {"kind":"inject"'` 看注入记录，统计在 `$DSH_HOME/storages/think-intensity-stats.json`。
+
+## 安装（冒烟）
+
+```bash
+dsh plugin --profile web add dsh-think-intensity                        # npm 预构建包（发布后）
+dsh plugin --profile web add github:<owner>/dsh-think-intensity#<sha>   # GitHub 安装：建议固定 commit
+dsh plugin --profile web add .                                          # 本地目录
+dsh plugin --profile web remove dsh-think-intensity                     # 卸载
+dsh --profile web --dump-config                                         # 验证层已移除
+```
+
+卸载不会删除 `$DSH_HOME/storages/think-intensity-stats.json`（历史统计，按需手动清理）。
+
+## 本地开发调试
+
+```bash
+pnpm install        # node-linker=hoisted（见 pnpm-workspace.yaml）
+pnpm run build      # tsc 出类型 -> tsdown 从 lib/types 打出单文件 lib/index.js
+pnpm run test       # vitest 单测（122 用例）
+```
+
+用本地源码宿主挂载调试（可选，报告 §4.1）：
+
+```bash
+cd _research/deepseek-harness
+pnpm install && pnpm run build
+pnpm dsh web --patch ../scratch/cordis.yml
+```
+
+或直接用已发布的 CLI 冒烟：
+
+```bash
+npx --ignore-scripts @deepseek-ai/dsh plugin --profile web add .
+```
+
+## 兼容性
+
+`engines.dsh: ">=0.1.7-rc.1 <0.3.0"`，代码内按能力探测分支（`settings.get` / `describe` / `register` 存在性），不逐 rc 枚举；Node `^22.19.0 || >=24`（对齐官方）。
+
+| 宿主版本 | 状态 | 说明 |
+|---|---|---|
+| 0.2.1-rc.2 | 冒烟通过 | 安装 / 激活 / 卸载 / `--dump-config` 无残留；真实请求注入待测 |
+| 0.2.0 | 待实测 | 命名空间按 entry id 解析的分支 |
+| 0.1.7-rc.1 ~ 0.1.x | 待实测 | 声明式设置分支 |
+
+## 分发
+
+- **npm（主）**：`files` 白名单只含 `lib/index.js`、`lib/types/**/*.d.ts` 与声明文件，`prepack` 强制重建，不发布 TS 源。
+- **GitHub（辅）**：安装时 `prepare` 会用源码构建，需要 Node 22+；pnpm 10+ 默认拦截依赖构建脚本，需在 `pnpm-workspace.yaml` 里放行（`onlyBuiltDependencies`）。
+- **dist-tag 按宿主大版本分线**（如 `dsh-0.2`），不按 rc 逐个打 tag。
+
+## 已知限制
+
+- 回填只在插件加载时跑一次，之后新增路由需重启才会检测。
+- 没有设置页（M5 未开始），配置要手写 `cordis.patch.yml`。
+- 自愈黑名单只存在进程内，重启即清空（有意为之：避免误判固化）。
+- 非推理模型上的显式档位会被剥离（防 `UNSUPPORTED_REASONING_EFFORT`），这是"显式优先"的唯一例外。
+
+## License
+
+MIT

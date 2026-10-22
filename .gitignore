@@ -1,0 +1,13 @@
+node_modules/
+lib/
+*.tsbuildinfo
+coverage/
+.vitest/
+.smoke/
+.pnpm-store/
+_research/
+.workbuddy/
+*执行计划*.md
+*调研报告*.md
+Thumbs.db
+.DS_Store
