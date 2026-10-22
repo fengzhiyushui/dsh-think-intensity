@@ -48,6 +48,8 @@ dsh --profile web --dump-config                                         # 验证
 
 卸载不会删除 `$DSH_HOME/storages/think-intensity-stats.json`（历史统计，按需手动清理）。
 
+包名 `dsh-think-intensity` 于 2026-10-22 在 npm 查询为未占用；安装时建议固定版本（如 `@0.1.0`），避免同名抢注包。
+
 ## 本地开发调试
 
 ```bash
@@ -79,6 +81,10 @@ npx --ignore-scripts @deepseek-ai/dsh plugin --profile web add .
 | 0.2.1-rc.2 | 冒烟通过 | 安装 / 激活 / 卸载 / `--dump-config` 无残留；真实请求注入待测 |
 | 0.2.0 | 待实测 | 命名空间按 entry id 解析的分支 |
 | 0.1.7-rc.1 ~ 0.1.x | 待实测 | 声明式设置分支 |
+
+## 测试
+
+`pnpm run test` 跑 123 个单测，覆盖报告 §7.4 场景 1–9：无 `reasoningEfforts` 模型不注入、只含 `off` 的非法声明不写入、自定义 wire 值（`high: ultra`）、路由默认冲突、显式 `off` 不被覆盖、非推理模型剥离、网关拒绝后的会话内降级、HMR 延后写、revision 冲突重试。场景 10（卸载无残留）在 M0 冒烟中用空插件验过，完整插件待复测。
 
 ## 分发
 

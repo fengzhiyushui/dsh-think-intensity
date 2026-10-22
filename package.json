@@ -15,8 +15,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "npm run build",
-    "prepack": "npm run build"
+    "prepare": "npm run build"
   },
   "files": [
     "lib/index.js",
