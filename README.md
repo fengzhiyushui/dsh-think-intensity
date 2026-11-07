@@ -1,5 +1,10 @@
 # dsh-think-intensity
 
+> [!IMPORTANT]
+> ### 📦 Project Archival Notice / 项目归档通知
+> **The features of this project have been implemented in dsh 0.2.2-rc.1, and the project is now archived.**  
+> *本项目的功能已在 dsh 0.2.2-rc.1 实现，项目转入归档状态。*
+
 <p align="center">
   <strong>Thinking Intensity Strategy Plugin for DeepSeek Harness (DSH)</strong><br>
   Decides reasoning effort levels on top of existing model capabilities — observable, self-healing, and fully reversible.

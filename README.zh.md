@@ -1,5 +1,10 @@
 # dsh-think-intensity
 
+> [!IMPORTANT]
+> ### 📦 项目归档通知 / Project Archival Notice
+> **本项目的功能已在 dsh 0.2.2-rc.1 实现，项目转入归档状态。**  
+> *The features of this project have been implemented in dsh 0.2.2-rc.1, and the project is now archived.*
+
 <p align="center">
   <strong>DeepSeek Harness (DSH) 思考强度策略插件</strong><br>
   在已有档位之上决定每次请求用哪一档，可观测、可自愈、可回滚。
